@@ -1,0 +1,26 @@
+# 连接配置。dbt 默认去 ~/.dbt/profiles.yml 找，
+# 我们把它放在项目里，运行时加 --profiles-dir . 即可。
+# 注意：duckdb 是无密码的本地文件库，所以这个文件可以提交进 git；
+# 将来换成 Redshift，密码必须改成 env_var('REDSHIFT_PASSWORD')，绝不能明文提交。
+aviation_dbt:
+  target: dev
+  outputs:
+    # 路径用相对路径：dbt 从项目根目录运行时，相对路径会被正确解析。
+    # 这样项目 clone 到任何机器、任何目录都能跑（W4 检查点的前提）。
+    dev:
+      type: duckdb
+      path: "aviation.duckdb"
+      schema: dev
+      threads: 1
+
+    ci:
+      type: duckdb
+      path: "ci.duckdb"
+      schema: ci
+      threads: 1
+
+    prod:
+      type: duckdb
+      path: "prod.duckdb"
+      schema: prod
+      threads: 4

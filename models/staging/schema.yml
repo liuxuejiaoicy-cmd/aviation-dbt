@@ -1,0 +1,40 @@
+version: 2
+
+# source 是 dbt 对"贴源层"的声明：告诉 dbt 这些表已存在、由外部系统写入，
+# dbt 只读不建。这样血缘图能从最上游一张表一路画到底。
+sources:
+  - name: raw
+    description: 贴源层（ODS），由 scripts/gen_sample_data.py 载入，dbt 只读
+    schema: main
+    tables:
+      - name: raw_flights
+        description: 航班明细原始表（BTS 结构精简版），一行一个航班
+      - name: raw_carriers
+        description: 航司维度原始表
+
+models:
+  - name: stg_flights
+    description: 航班明细清洗层，粒度 = 一行一个航班
+    columns:
+      - name: flight_id
+        description: 航班唯一标识
+        data_tests: [unique, not_null]
+      - name: carrier_code
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['AA', 'DL', 'UA', 'WN']
+                quote: true
+      - name: dep_delay
+        description: 出发延误分钟数，负数表示提前起飞
+      - name: seats
+        description: 可售座位数
+
+  - name: stg_carriers
+    description: 航司维度清洗层，粒度 = 一行一个航司
+    columns:
+      - name: carrier_code
+        data_tests: [unique, not_null]
+      - name: carrier_name
+        data_tests: [not_null]

@@ -1,0 +1,16 @@
+# dbt 产物，不要提交
+target/
+dbt_packages/
+logs/
+
+# 本地虚拟环境
+.venv/
+
+# 数据库文件与原始数据（体积大、可再生）
+*.duckdb
+*.duckdb.wal
+data/*.csv
+
+# Windows
+Thumbs.db
+desktop.ini

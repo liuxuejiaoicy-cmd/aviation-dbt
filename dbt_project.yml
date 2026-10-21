@@ -1,0 +1,29 @@
+name: 'aviation_dbt'
+version: '1.0.0'
+config-version: 2
+
+# 这个 profile 名字必须和 profiles.yml 顶层 key 一致
+profile: 'aviation_dbt'
+
+model-paths: ["models"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+test-paths: ["tests"]
+analysis-paths: ["analyses"]
+
+clean-targets:
+  - "target"
+  - "dbt_packages"
+  - "logs"
+
+# 分层命名空间：staging 出 view，marts 出 table
+# +schema 会让物理 schema 变成 dev_staging / dev_marts，而不是全挤在 dev 里
+models:
+  aviation_dbt:
+    staging:
+      +materialized: view
+      +schema: staging
+    marts:
+      +materialized: table
+      +schema: marts
