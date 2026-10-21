@@ -3,6 +3,9 @@ target/
 dbt_packages/
 logs/
 
+# dbt 生成的本地用户标识（每台机器一份，不该共享）
+.user.yml
+
 # 本地虚拟环境
 .venv/
 
