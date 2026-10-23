@@ -1,0 +1,43 @@
+name: dbt CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: 安装 dbt 与 DuckDB 适配器
+        run: |
+          python -m pip install --upgrade pip
+          pip install dbt-duckdb
+
+      - name: 生成样例数据（EL 环节，在 dbt 之外）
+        run: python scripts/gen_sample_data.py
+
+      - name: 构建模型 + 快照 + 测试
+        run: dbt build --target ci
+        env:
+          DBT_PROFILES_DIR: .
+
+      - name: 生成文档产物
+        if: always()
+        run: dbt docs generate --target ci
+        env:
+          DBT_PROFILES_DIR: .
+
+      - name: 上传 dbt 产物
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dbt-artifacts
+          path: target/
