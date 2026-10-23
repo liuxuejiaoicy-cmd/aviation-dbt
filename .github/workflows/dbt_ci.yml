@@ -17,12 +17,15 @@ jobs:
           python-version: '3.12'
 
       - name: 安装 dbt 与 DuckDB 适配器
+        # 版本必须与本地开发环境一致，锁死。
+        # 不锁版本的 CI 会被上游更新无声破坏——这是真实事故来源。
         run: |
           python -m pip install --upgrade pip
-          pip install dbt-duckdb
+          pip install "dbt-core==1.12.6" "dbt-duckdb==1.11.0"
 
       - name: 生成样例数据（EL 环节，在 dbt 之外）
-        run: python scripts/gen_sample_data.py
+        # 库名必须和下面的 --target ci 一致（ci.duckdb）
+        run: python scripts/gen_sample_data.py ci.duckdb
 
       - name: 构建模型 + 快照 + 测试
         run: dbt build --target ci

@@ -10,6 +10,7 @@ dbt 负责的是之后那一步 T（转换），这个边界要分清。
 
 import csv
 import random
+import sys
 from pathlib import Path
 
 import duckdb
@@ -17,6 +18,13 @@ import duckdb
 BASE = Path(__file__).resolve().parent.parent
 DATA_DIR = BASE / "data"
 DATA_DIR.mkdir(exist_ok=True)
+
+# 数据库文件名必须与 dbt 的 target 对应：
+#   dev  → aviation.duckdb
+#   ci   → ci.duckdb     （CI 里执行：python scripts/gen_sample_data.py ci.duckdb）
+#   prod → prod.duckdb
+# 写错库会导致 dbt 报 "Table with name raw_flights does not exist"
+DB_NAME = sys.argv[1] if len(sys.argv) > 1 else "aviation.duckdb"
 
 random.seed(42)
 
@@ -101,7 +109,7 @@ def main():
         writer.writerow(["carrier_code", "carrier_name", "country"])
         writer.writerows(CARRIERS)
 
-    con = duckdb.connect(str(BASE / "aviation.duckdb"))
+    con = duckdb.connect(str(BASE / DB_NAME))
     for table, csv_path in [("raw_flights", flights_csv), ("raw_carriers", carriers_csv)]:
         con.execute(
             f"CREATE OR REPLACE TABLE {table} AS "
