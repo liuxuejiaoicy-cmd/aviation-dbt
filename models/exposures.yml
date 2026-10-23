@@ -1,0 +1,23 @@
+version: 2
+
+# exposures = 声明"谁在消费我的数据"
+# 它不建任何东西，只做一件事：把血缘图的右端从"数据模型"延伸到"业务应用"
+exposures:
+  - name: carrier_daily_dashboard
+    label: 航司每日运营看板
+    type: dashboard                      # 合法值：dashboard / notebook / analysis / ml / application
+    maturity: high                       # high / medium / low：这个消费方有多重要
+    url: https://bi.example.com/carrier-daily
+    description: >
+      面向运营VP的每日航班表现看板，T+1 08:00 前必须刷新完成。
+      消费 mart_carrier_daily 的准点率与客座率指标。
+
+    owner:
+      name: 数据分析组
+      email: data-analysis@example.com
+
+    depends_on:
+      - ref('mart_carrier_daily')        # 消费哪个 dbt 模型
+      - ref('dim_carrier_scd2')          # 快照表也能被消费（航司名称取历史版本）
+
+    tags: ['p0', 'daily']
