@@ -1,24 +1,24 @@
 version: 2
 
 models:
-  - name: mart_carrier_daily
-    description: >
-      航司 x 日 经营汇总宽表。只含可加度量；
-      客座率等比率指标在 W5 加入时，必须同时落分子（RPK）和分母（ASK）。
+  - name: mart_carrier_daily        # 必须等于文件名
+    description: 航司×日 运营汇总（增量模型）
     columns:
       - name: flight_date
         description: 航班日期
-        data_tests: [not_null]
+        data_tests:
+          - not_null
+
       - name: carrier_code
         description: 航司 IATA 二字代码
         data_tests:
           - not_null
           - relationships:
-              arguments:
+              arguments:            # ← 别忘了这层
                 to: ref('stg_carriers')
                 field: carrier_code
+
       - name: flight_count
-        description: 当日航班总数（含取消）
-        data_tests: [not_null]
-      - name: total_revenue
-        description: 当日客运收入合计
+        description: 当日航班数
+        data_tests:
+          - not_null
