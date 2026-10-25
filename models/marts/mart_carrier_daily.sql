@@ -30,11 +30,20 @@ aggregated as (
         sum(f.passengers)               as total_passengers,
         sum(f.seats)                    as total_seats,
         sum(f.revenue)                  as total_revenue,
-        sum(f.dep_delay)            as total_dep_delay_min
+        sum(f.dep_delay)            as total_dep_delay_min,
 
-        -- ③ 分子分母都留着，让下游自己算比率
-        --    （客座率、准点率在这里不落库）
+        -- ③ 比率的分子分母（必须留，上层汇总全靠它们）
+        sum(case when f.cancelled = 0 then 1 else 0 end)
+                                        as completed_flights,
+        sum(case when f.cancelled = 0 and f.dep_delay <= 15 then 1 else 0 end)
+                                        as on_time_flights,
 
+        -- ④ 比率本身（用 ③ 现算，不要自己再 sum 一遍）
+        {{ load_factor('sum(f.passengers)', 'sum(f.seats)') }}
+                                        as load_factor_pct,
+        round(100.0 * sum(case when f.cancelled = 0 and f.dep_delay <= 15 then 1 else 0 end)
+              / nullif(sum(case when f.cancelled = 0 then 1 else 0 end), 0), 2)
+                                        as on_time_rate_pct
     from flights f
     left join carriers c
         on f.carrier_code = c.carrier_code
